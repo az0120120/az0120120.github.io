@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骗影追击局 - 互动考核</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; font-family: 'PingFang SC', sans-serif; }
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin: 10px 0; position: relative; line-height: 1.5; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 12px; margin: 8px 0; border: 1px solid #475569; border-radius: 10px; transition: 0.2s; }
+        .option-btn:hover { background: #334155; }
+        .correct { background: #166534 !important; border-color: #22c55e !important; }
+        .wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+    </style>
+</head>
+<body class="text-white flex justify-center items-center min-h-screen">
+
+    <div id="game" class="w-full max-w-sm bg-slate-900 border border-slate-700 h-[600px] overflow-y-auto p-4 rounded-3xl shadow-2xl">
+        <div id="quiz-area">
+            <h2 class="text-xl font-bold text-yellow-400 mb-4" id="q-title">正在加载任务...</h2>
+            <div id="q-content" class="bg-slate-800 p-4 rounded-xl mb-6 text-sm text-slate-200"></div>
+            <div id="options"></div>
+        </div>
+        <div id="result" class="hidden text-center mt-10">
+            <h3 class="text-2xl font-bold mb-4">考核结束</h3>
+            <p id="final-score"></p >
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "关卡 1：境外“网恋”",
+                desc: "刚认识3天的“网恋对象”每天嘘寒问暖，却始终拒绝视频，理由是“海外工作不方便”。你该怎么做？",
+                opts: ["A. 体谅他的难处，继续深入交往", "B. 要求发实时语音 + 举当日报纸拍照验证", "C. 主动转钱表达诚意，让他感到信任"],
+                ans: 1
+            },
+            {
+                q: "关卡 2：投资导师",
+                desc: "某“导师”推荐“内部数字货币平台”，承诺“月息6%”，且仅限熟人推荐，让你下载非应用商店APP，你会？",
+                opts: ["A. 赶紧下载，怕错过赚钱机会", "B. 先查平台备案+收益合理性（超银行理财4倍即疑）", "C. 问身边朋友，大家都投就跟着投"],
+                ans: 1
+            },
+            {
+                q: "关卡 3：宠物拼单",
+                desc: "宠物群里的“同好”说有低价处方粮渠道，要整箱拼单，让你先转5000元定金，你应该？",
+                opts: ["A. 立刻转账，相信同好不会骗自己", "B. 要求走正规电商平台交易，或现场验货"],
+                ans: 1
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function loadQ() {
+            if(currentQ >= questions.length) {
+                document.getElementById('quiz-area').classList.add('hidden');
+                document.getElementById('result').classList.remove('hidden');
+                document.getElementById('final-score').innerText = `你的识骗率：${(score/questions.length)*100}%`;
+                return;
+            }
+            document.getElementById('q-title').innerText = questions[currentQ].q;
+            document.getElementById('q-content').innerText = questions[currentQ].desc;
+            const optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            questions[currentQ].opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => check(i, btn);
+                optDiv.appendChild(btn);
+            });
+        }
+
+        function check(i, btn) {
+            if(i === questions[currentQ].ans) {
+                btn.classList.add('correct');
+                score++;
+            } else {
+                btn.classList.add('wrong');
+            }
+            setTimeout(() => { currentQ++; loadQ(); }, 800);
+        }
+        loadQ();
+    </script>
+</body>
+</html>
