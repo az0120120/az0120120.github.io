@@ -1,88 +1,314 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>骗影追击局 - 互动考核</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #0f172a; font-family: 'PingFang SC', sans-serif; }
-        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin: 10px 0; position: relative; line-height: 1.5; }
-        .option-btn { display: block; width: 100%; text-align: left; padding: 12px; margin: 8px 0; border: 1px solid #475569; border-radius: 10px; transition: 0.2s; }
-        .option-btn:hover { background: #334155; }
-        .correct { background: #166534 !important; border-color: #22c55e !important; }
-        .wrong { background: #991b1b !important; border-color: #ef4444 !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明日航线 · Tomorrow's Route</title>
+<style>
+:root{--coral:#ff8a7a;--coral-d:#e76b5e;--mint:#a8d8c8;--mint-d:#6fbfa8;--laven:#c8b8e0;--laven-d:#9d8bc4;--paper:#fdfaf3;--ink:#3a3a3a;--sub:#7a7268;--soft:#f5ede0;--line:#e3d8c5;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:radial-gradient(circle at 20% 10%,rgba(255,138,122,.08),transparent 40%),radial-gradient(circle at 80% 90%,rgba(168,216,200,.10),transparent 40%),var(--paper);color:var(--ink);overflow-x:hidden;line-height:1.55;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.topbar{background:linear-gradient(135deg,#fff,#fbf5e8);border:1px solid var(--line);border-radius:18px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,.04);display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;}
+.topbar .row{display:flex;justify-content:space-between;align-items:center;}
+.topbar .label{color:var(--sub);font-size:11px;}
+.topbar .val{font-weight:600;}
+.bar-wrap{height:5px;background:#efe5d4;border-radius:3px;overflow:hidden;margin-top:3px;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--mint-d));transition:width .4s;}
+.bar-fill.coral{background:linear-gradient(90deg,#ffb3a8,var(--coral-d));}
+.bar-fill.laven{background:linear-gradient(90deg,#e0d4f0,var(--laven-d));}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.card .hint{color:var(--sub);font-size:12px;margin-bottom:10px;}
+.btn{display:block;width:100%;background:linear-gradient(135deg,var(--coral),var(--coral-d));color:#fff;border:none;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s;box-shadow:0 3px 0 #c95a4f;}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #c95a4f;}
+.btn.mint{background:linear-gradient(135deg,var(--mint),var(--mint-d));box-shadow:0 3px 0 #4f9c87;}
+.btn.laven{background:linear-gradient(135deg,var(--laven),var(--laven-d));box-shadow:0 3px 0 #7e6cab;}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-weight:500;}
+.btn.small{padding:8px 12px;font-size:13px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-row .btn{flex:1;}
+.event{background:linear-gradient(135deg,#fffaf3,#fff);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;}
+.event .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;background:var(--soft);color:var(--sub);margin-right:6px;}
+.event .tag.limited{background:#ffe6e0;color:var(--coral-d);}
+.event .tag.hidden{background:#e8dff5;color:var(--laven-d);}
+.event .tag.daily{background:#e0f0e8;color:var(--mint-d);}
+.event-title{font-size:14px;font-weight:600;margin:4px 0;}
+.event-desc{font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.55;}
+.event-cost{font-size:11px;color:var(--coral-d);margin-bottom:8px;}
+.choices{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.choice{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;cursor:pointer;transition:all .15s;text-align:left;}
+.choice:hover{border-color:var(--coral);background:#fff8f5;}
+.choice .label{font-weight:600;margin-bottom:4px;}
+.choice .hint{color:var(--sub);font-size:11px;}
+.dialog{background:linear-gradient(135deg,#fff,#fffaf3);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;}
+.dialog .npc{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.npc-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--laven));display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;}
+.npc-name{font-weight:600;font-size:13px;}
+.npc-role{font-size:11px;color:var(--sub);}
+.dialog-text{font-size:14px;line-height:1.6;}
+.dialog-text::before{content:'❝ ';color:var(--coral);font-size:18px;}
+.feedback{background:linear-gradient(135deg,#fff8f5,#fff);border:1px dashed var(--coral);border-radius:14px;padding:12px;margin:10px 0;font-size:13px;}
+.feedback .changes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chg{font-size:11px;padding:3px 8px;border-radius:8px;background:var(--soft);color:var(--ink);}
+.chg.up{background:#e0f0e8;color:#2d8a6e;}
+.chg.down{background:#fde3de;color:var(--coral-d);}
+canvas{display:block;margin:0 auto;}
+.stats-row{display:flex;gap:8px;margin-top:8px;}
+.stats-block{flex:1;text-align:center;}
+.stats-block .title{font-size:12px;color:var(--sub);margin-bottom:4px;}
+.tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px;margin-top:auto;box-shadow:0 -2px 8px rgba(0,0,0,.03);position:sticky;bottom:8px;}
+.tab{flex:1;text-align:center;padding:10px 4px;font-size:12px;color:var(--sub);border-radius:10px;cursor:pointer;transition:all .2s;}
+.tab.active{background:linear-gradient(135deg,var(--coral),var(--coral-d));color:#fff;font-weight:600;}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px;}
+.diary-entry{background:#fffaf0;border-left:3px solid var(--laven-d);border-radius:0 12px 12px 0;padding:10px 12px;margin-bottom:8px;}
+.diary-entry .meta{font-size:11px;color:var(--sub);margin-bottom:4px;}
+.diary-entry .text{font-size:13px;line-height:1.6;}
+.diary-entry .mood{font-size:11px;margin-top:6px;display:inline-block;padding:2px 8px;border-radius:8px;background:var(--soft);}
+.npc-card{display:flex;align-items:center;gap:10px;background:#fffaf0;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;}
+.npc-card .info{flex:1;}
+.npc-card .name{font-weight:600;font-size:13px;}
+.npc-card .desc{font-size:11px;color:var(--sub);}
+.heart-bar{height:4px;background:#efe5d4;border-radius:2px;overflow:hidden;margin-top:4px;width:100%;}
+.heart-fill{height:100%;background:linear-gradient(90deg,#ffc8c0,var(--coral-d));}
+.intro{text-align:center;padding:40px 20px;background:linear-gradient(180deg,rgba(255,138,122,.05),rgba(168,216,200,.08));border-radius:24px;border:1px solid var(--line);}
+.intro h1{font-size:28px;margin-bottom:8px;letter-spacing:2px;background:linear-gradient(135deg,var(--coral-d),var(--laven-d));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.intro .en{color:var(--sub);font-size:13px;letter-spacing:3px;margin-bottom:24px;}
+.intro .quote{font-size:13px;color:var(--sub);margin:24px 0;padding:0 8px;line-height:1.8;}
+.input-name{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 16px;font-size:14px;margin:16px 0;text-align:center;font-family:inherit;color:var(--ink);}
+.input-name:focus{outline:none;border-color:var(--coral);}
+.feature-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0;}
+.feature{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;}
+.feature .ic{font-size:22px;margin-bottom:4px;}
+.feature .lb{font-size:12px;font-weight:600;}
+.feature .ds{font-size:10px;color:var(--sub);margin-top:2px;}
+.map-section{background:linear-gradient(135deg,#fffaf3,#fff,#f9f3ff);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;}
+.map-title{font-size:18px;font-weight:600;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--coral-d),var(--laven-d));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.path-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;}
+.path-card .name{font-weight:600;font-size:13px;color:var(--coral-d);}
+.path-card .desc{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.6;}
+@keyframes fadein{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fade{animation:fadein .4s ease-out;}
+textarea.reflect{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:13px;resize:none;background:#fffaf0;color:var(--ink);}
+textarea.reflect:focus{outline:none;border-color:var(--laven-d);}
+.credit{text-align:center;font-size:10px;color:var(--sub);padding:8px;opacity:.6;}
+</style>
 </head>
-<body class="text-white flex justify-center items-center min-h-screen">
-
-    <div id="game" class="w-full max-w-sm bg-slate-900 border border-slate-700 h-[600px] overflow-y-auto p-4 rounded-3xl shadow-2xl">
-        <div id="quiz-area">
-            <h2 class="text-xl font-bold text-yellow-400 mb-4" id="q-title">正在加载任务...</h2>
-            <div id="q-content" class="bg-slate-800 p-4 rounded-xl mb-6 text-sm text-slate-200"></div>
-            <div id="options"></div>
-        </div>
-        <div id="result" class="hidden text-center mt-10">
-            <h3 class="text-2xl font-bold mb-4">考核结束</h3>
-            <p id="final-score"></p >
-        </div>
-    </div>
-
-    <script>
-        const questions = [
-            {
-                q: "关卡 1：境外“网恋”",
-                desc: "刚认识3天的“网恋对象”每天嘘寒问暖，却始终拒绝视频，理由是“海外工作不方便”。你该怎么做？",
-                opts: ["A. 体谅他的难处，继续深入交往", "B. 要求发实时语音 + 举当日报纸拍照验证", "C. 主动转钱表达诚意，让他感到信任"],
-                ans: 1
-            },
-            {
-                q: "关卡 2：投资导师",
-                desc: "某“导师”推荐“内部数字货币平台”，承诺“月息6%”，且仅限熟人推荐，让你下载非应用商店APP，你会？",
-                opts: ["A. 赶紧下载，怕错过赚钱机会", "B. 先查平台备案+收益合理性（超银行理财4倍即疑）", "C. 问身边朋友，大家都投就跟着投"],
-                ans: 1
-            },
-            {
-                q: "关卡 3：宠物拼单",
-                desc: "宠物群里的“同好”说有低价处方粮渠道，要整箱拼单，让你先转5000元定金，你应该？",
-                opts: ["A. 立刻转账，相信同好不会骗自己", "B. 要求走正规电商平台交易，或现场验货"],
-                ans: 1
-            }
-        ];
-
-        let currentQ = 0;
-        let score = 0;
-
-        function loadQ() {
-            if(currentQ >= questions.length) {
-                document.getElementById('quiz-area').classList.add('hidden');
-                document.getElementById('result').classList.remove('hidden');
-                document.getElementById('final-score').innerText = `你的识骗率：${(score/questions.length)*100}%`;
-                return;
-            }
-            document.getElementById('q-title').innerText = questions[currentQ].q;
-            document.getElementById('q-content').innerText = questions[currentQ].desc;
-            const optDiv = document.getElementById('options');
-            optDiv.innerHTML = '';
-            questions[currentQ].opts.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt;
-                btn.onclick = () => check(i, btn);
-                optDiv.appendChild(btn);
-            });
-        }
-
-        function check(i, btn) {
-            if(i === questions[currentQ].ans) {
-                btn.classList.add('correct');
-                score++;
-            } else {
-                btn.classList.add('wrong');
-            }
-            setTimeout(() => { currentQ++; loadQ(); }, 800);
-        }
-        loadQ();
-    </script>
+<body>
+<div id="app"></div>
+<script>
+const ABILITIES=[{n:'学术'},{n:'社交'},{n:'实践'},{n:'创意'},{n:'自我管理'}];
+const VALUES=[{n:'稳定'},{n:'创造'},{n:'影响'},{n:'自主'},{n:'利他'}];
+const NPCS={lin:{name:'林学姐',role:'导师·心理学研究生',emoji:'🌿',color:'#6fbfa8'},remote:{name:'远闺蜜',role:'高中同学·异地友谊',emoji:'💌',color:'#e76b5e'},mate:{name:'室友',role:'同寝四年',emoji:'🛏️',color:'#9d8bc4'},mom:{name:'妈妈',role:'家庭支持',emoji:'🌷',color:'#d6a86f'}};
+const SEMESTERS=[
+{id:1,label:'大一·秋',tagline:'认识校园，慢慢来'},
+{id:2,label:'大一·春',tagline:'兴趣开始浮出水面'},
+{id:3,label:'大一·暑',tagline:'第一个长假怎么过？'},
+{id:4,label:'大二·秋',tagline:'⚠ 转专业窗口期'},
+{id:5,label:'大二·春',tagline:'专业课开始上强度'},
+{id:6,label:'大二·暑',tagline:'要不要找份实习？'},
+{id:7,label:'大三·秋',tagline:'同辈压力开始浮现'},
+{id:8,label:'大三·春',tagline:'实习季 / 备考季'},
+{id:9,label:'大三·暑',tagline:'关键夏天，方向收敛'},
+{id:10,label:'大四·秋',tagline:'考研冲刺 / 求职面试'},
+{id:11,label:'大四·春',tagline:'毕设 + 最后的选择'},
+{id:12,label:'大四·暑',tagline:'四年回顾 · 生成未来地图'}
+];
+const EVENTS=[
+{id:'fresh_meet',sem:[1],type:'daily',title:'迎新破冰夜',desc:'宿舍楼组织迎新，要不要去？人挺多的。',cost:{energy:-2},choices:[
+ {label:'去！多认识些人',desc:'+社交 +实践，可能解锁宿舍关系',effects:{社交:2,实践:1,影响:1,mood:3,mate_like:2},note:'你跟室友混熟了'},
+ {label:'戴耳机宅着',desc:'+自主，省精力',effects:{自我管理:1,自主:2,mood:-1,energy:1},note:'你保住了自己的节奏'},
+ {label:'去看看就回',desc:'两边折中',effects:{社交:1,自主:1,mood:1}}]},
+{id:'first_math',sem:[1],type:'limited',title:'微积分第一次小测',desc:'极限那一章你听得云里雾里。同寝几个都说看不懂——但小测就在下周。',cost:{energy:-3},choices:[
+ {label:'熬夜啃书，目标85+',desc:'+学术 +自我管理，精力大跌',effects:{学术:3,自我管理:2,稳定:1,mood:-3,energy:-3},note:'笔记本写了18页'},
+ {label:'找学长讲一遍',desc:'+学术 +社交，需要主动开口',effects:{学术:2,社交:2,mood:1,lin_like:1},note:'林学姐请你喝了奶茶'},
+ {label:'佛系裸考',desc:'+自主，但学术不长',effects:{自主:2,mood:0},note:'裸考57分，能过就行'}]},
+{id:'club_choose',sem:[1,2],type:'daily',title:'社团纳新',desc:'三个社团都给你递了表：辩论社、动漫社、志愿者协会。',cost:{energy:-1},choices:[
+ {label:'辩论社：练练嘴',desc:'+社交 +影响',effects:{社交:2,创意:1,影响:2,mood:1},note:'第一次站在话筒后面'},
+ {label:'动漫社：找同好',desc:'+创意 +社交',effects:{创意:2,社交:1,创造:1,mood:2},note:'认识了画手朋友'},
+ {label:'志愿协会：做点事',desc:'+实践 +利他',effects:{实践:2,社交:1,利他:2,mood:1},note:'去山区小学支教三天'},
+ {label:'都不去，先观察',desc:'+自我管理 +自主',effects:{自我管理:1,自主:2,mood:0},note:'你保留了所有选项'}]},
+{id:'remote_friend_1',sem:[1,2,3],type:'daily',title:'远闺蜜的电话',desc:'高中最好的朋友半夜打来，她说她在北方读书，第一次想家想哭。',cost:{energy:-1},choices:[
+ {label:'聊到三点',desc:'+情感 -精力',effects:{社交:1,利他:2,mood:2,energy:-2,remote_like:3},note:'第二天第一节课睡着了'},
+ {label:'安抚十分钟',desc:'温暖但克制',effects:{社交:1,利他:1,自我管理:1,mood:1,remote_like:1}},
+ {label:'明天再回',desc:'-情感',effects:{自主:1,mood:-2,remote_like:-2},note:'她第二天发了"没事"'}]},
+{id:'transfer_thought',sem:[2,4],type:'hidden',title:'转专业的念头',desc:'连续两节专业课你都在走神。你开始想：是不是选错了？',cost:{energy:-2,mood:-2},choices:[
+ {label:'去找林学姐聊',desc:'+认知，可能解锁咨询线',effects:{社交:1,自主:1,mood:2,lin_like:2},note:'林学姐："不急，先列三个最近开心的瞬间"'},
+ {label:'连刷三天专业课',desc:'死磕到底',effects:{学术:2,自我管理:2,稳定:2,mood:-1},note:'坚持下来了，但仍然没找到喜欢的点'},
+ {label:'查转专业要求',desc:'+实践 +自主',effects:{实践:1,自主:3,创造:1,mood:1},note:'你发现成绩要求其实够得着'}]},
+{id:'art_workshop',sem:[2,3,5],type:'daily',title:'校园艺术工坊',desc:'周末有一个免费水彩工作坊，4 小时，地点在美术馆。',cost:{energy:-2,money:-30},choices:[
+ {label:'报名！',desc:'+创意 +创造',effects:{创意:3,创造:2,mood:3},note:'你画了一张三星堆面具'},
+ {label:'算了，不擅长',desc:'+稳定',effects:{稳定:1,mood:-1},note:'你后来在朋友圈刷到同学作品，有点遗憾'}]},
+{id:'mom_call_1',sem:[2,5,8],type:'daily',title:'妈妈的电话',desc:'妈妈打电话来，问期中考得怎么样，又问"想没想以后做什么"。',cost:{energy:-1},choices:[
+ {label:'实话实说：还没想清',desc:'诚实',effects:{自主:2,mood:1,mom_like:1},note:'妈妈："想听听你自己怎么想"'},
+ {label:'报喜不报忧',desc:'+稳定 -情感',effects:{稳定:1,自我管理:1,mood:-1,mom_like:-1}},
+ {label:'反问她想要什么',desc:'+影响 +自主',effects:{社交:1,影响:1,自主:2,mood:0,mom_like:1},note:'你们聊了一小时'}]},
+{id:'summer_choice',sem:[3],type:'limited',title:'第一个暑假',desc:'七月开始，你有两个月。',cost:{},choices:[
+ {label:'回家躺平',desc:'+心情 +稳定',effects:{稳定:2,自我管理:-1,mood:3,energy:5},note:'妈做的饭真香，但开学前两天开始焦虑'},
+ {label:'科研助理',desc:'+学术 +实践',effects:{学术:3,实践:2,稳定:1,mood:1,energy:-3,money:400},note:'你跟着学姐发了第一篇会议海报'},
+ {label:'去支教/旅居',desc:'+创意 +利他',effects:{创意:2,实践:2,利他:3,影响:1,mood:3,energy:-2},note:'你在云南小学待了三周'},
+ {label:'学一门新技能',desc:'+自主 +创造',effects:{创意:2,自主:3,创造:2,mood:2,energy:-2},note:'你学了 Blender，做了第一个 3D 模型'}]},
+{id:'transfer_decide',sem:[4],type:'limited',title:'⚠ 转专业最后窗口',desc:'10 月底是转专业截止。你之前的犹豫，必须给一个答案了。',cost:{energy:-3,mood:-2},choices:[
+ {label:'转！去喜欢的方向',desc:'+创造 +自主 -稳定',effects:{创意:3,创造:4,自主:4,稳定:-2,mood:3,energy:-3},note:'你递交了申请，开始重新认识自己'},
+ {label:'不转，留下来跑稳',desc:'+稳定 +自我管理',effects:{学术:2,自我管理:2,稳定:3,mood:-1,自主:-1},note:'你决定先在原方向跑出成绩'},
+ {label:'双学位：两边都不放',desc:'高负荷 +多线',effects:{学术:2,创意:2,自我管理:3,稳定:1,创造:2,mood:-3,energy:-4},note:'你接下来三年都会很忙'}]},
+{id:'group_proj',sem:[4,5,7],type:'daily',title:'小组作业摆烂队友',desc:'四人小组，两个躺平，一个失踪。截止还有三天。',cost:{energy:-3,mood:-2},choices:[
+ {label:'一个人扛',desc:'+学术 +自我管理 -心情',effects:{学术:2,自我管理:3,稳定:2,mood:-3,energy:-3},note:'你熬了两个通宵，拿了 92 分但崩溃了'},
+ {label:'强势分工，开撕',desc:'+影响 +社交',effects:{社交:1,影响:3,自主:2,mood:-1,mate_like:-1},note:'你做了组长，三个队友照做了'},
+ {label:'摆烂跟队',desc:'+稳定 -自主',effects:{自我管理:-1,稳定:1,自主:-2,mood:0},note:'拿了 73 分，皆大欢喜'}]},
+{id:'crush',sem:[5,6],type:'hidden',title:'有点心动',desc:'隔壁班一个人，你最近上课总忍不住偷看。',cost:{energy:-2},choices:[
+ {label:'告白',desc:'高风险',effects:{社交:2,影响:2,自主:3,mood:1},note:'结果如何，由你自己想象'},
+ {label:'保持暧昧',desc:'+心情 -精力',effects:{社交:2,创意:1,mood:3,energy:-2},note:'你写了三首没寄出的诗'},
+ {label:'专心学业',desc:'+学术',effects:{学术:2,自我管理:2,稳定:1,mood:-1},note:'两年后你想起，会笑一下'}]},
+{id:'sleep_guilt',sem:[2,5,8],type:'daily',title:'躺平的罪恶感',desc:'你今天什么都没做，但又觉得自己应该做点什么。',cost:{mood:-2},choices:[
+ {label:'起来学两小时',desc:'+学术 -心情',effects:{学术:1,自我管理:1,稳定:1,mood:-1},note:'学完发现心情更糟了'},
+ {label:'放过自己，看一部电影',desc:'+创意 +心情',effects:{创意:2,自主:1,mood:3},note:'《侏罗纪公园》看完了，神清气爽'},
+ {label:'去操场散步',desc:'+自我管理 +心情',effects:{自我管理:2,自主:1,mood:2,energy:1},note:'你想通了一件小事'}]},
+{id:'first_intern',sem:[6],type:'limited',title:'第一份实习',desc:'你有两个 offer：一个大厂打杂（钱多），一个小工作室核心项目（学得多）。',cost:{energy:-3},choices:[
+ {label:'大厂：先看看世界',desc:'+稳定 +实践 +钱',effects:{实践:3,稳定:3,自我管理:2,mood:1,money:1500},note:'你见到了好多牛人，也看到了行业的天花板'},
+ {label:'小工作室：核心岗',desc:'+创造 +实践',effects:{实践:3,创意:3,创造:3,自主:2,mood:2,money:800},note:'你上线了第一个作品'},
+ {label:'不实习，自己做项目',desc:'+创造 +自主 -钱',effects:{创意:2,创造:4,自主:4,mood:2,money:-200},note:'你的开源项目拿了 200 星'}]},
+{id:'peer_anxiety',sem:[7,8],type:'daily',title:'同辈压力',desc:'班群里有人保研、有人拿大厂 offer、有人创业。你打开自己的简历，空了一半。',cost:{energy:-2,mood:-3},choices:[
+ {label:'找林学姐聊聊',desc:'+认知',effects:{社交:1,自主:2,mood:3,lin_like:2},note:'林学姐："别人的时间表不是你的"'},
+ {label:'卷起来！',desc:'+学术 -心情',effects:{学术:2,自我管理:2,稳定:2,mood:-2,energy:-3},note:'你三个月没睡好'},
+ {label:'屏蔽班群，专心做事',desc:'+自主 +心情',effects:{自主:3,自我管理:1,mood:2},note:'你的进度反而快了'}]},
+{id:'family_money',sem:[7,8,9],type:'limited',title:'家里出了点状况',desc:'爸爸打电话说，今年家里生意不太好。你要不要兼职减轻负担？',cost:{energy:-2,mood:-3},choices:[
+ {label:'立刻找兼职',desc:'+实践 +利他 -精力',effects:{实践:3,利他:3,稳定:2,mood:-2,energy:-3,money:800,mom_like:2},note:'你开始每周四个晚上送外卖'},
+ {label:'家教 / 校内工作',desc:'+实践 +学术',effects:{学术:1,实践:2,自我管理:2,稳定:1,mood:0,money:500,mom_like:1},note:'你的学生考进了实验班'},
+ {label:'专心学业，靠奖学金',desc:'+学术 高压',effects:{学术:3,自我管理:3,稳定:1,mood:-2,money:300,mom_like:1},note:'你拿了一等奖学金，但代价是头发'}]},
+{id:'big_choice',sem:[8,9],type:'limited',title:'三岔路口',desc:'考研 / 求职 / Gap，三选一。这次你必须想清楚。',cost:{energy:-3,mood:-2},choices:[
+ {label:'考研：再读三年',desc:'+学术 +稳定',effects:{学术:5,自我管理:3,稳定:4,mood:-1,energy:-4},note:'你定了目标院校，开始八个月的孤独战'},
+ {label:'求职：直接进社会',desc:'+实践 +影响',effects:{实践:4,社交:2,影响:3,自主:2,mood:1,money:1000},note:'你拿到了第一份正式 offer'},
+ {label:'Gap：先看清自己想什么',desc:'+创造 +自主 高风险',effects:{创意:3,创造:4,自主:5,影响:1,mood:2,稳定:-3},note:'你不知道一年后在哪里，但你不慌'}]},
+{id:'mid_summer',sem:[9],type:'daily',title:'夏天，第二次重新选择',desc:'你回头看，已经走出来一些。这个夏天再做一个决定。',cost:{energy:-2},choices:[
+ {label:'深耕主线',desc:'+目标方向加成',effects:{学术:2,实践:2,自我管理:2,稳定:2,mood:2},note:'你越来越像一个具体的人'},
+ {label:'横向拓展',desc:'+创意 +影响',effects:{创意:3,社交:2,影响:2,自主:1,mood:2},note:'你尝试了三件以前不会做的事'},
+ {label:'休息，等灵感',desc:'+创造 +心情',effects:{创意:1,创造:3,自主:2,mood:4,energy:3},note:'你重读了一本高中没读完的书'}]},
+{id:'final_push',sem:[10,11],type:'limited',title:'临门一脚',desc:'毕设 / 终面 / 复试，时间不多了。',cost:{energy:-4,mood:-3},choices:[
+ {label:'死磕产出',desc:'+学术/实践 -精力',effects:{学术:3,实践:3,自我管理:3,稳定:2,mood:-3,energy:-5},note:'你交付了一个像样的东西'},
+ {label:'调整节奏，慢慢推',desc:'+自我管理 +心情',effects:{自我管理:3,自主:2,mood:1,energy:-2},note:'你写完了，没有崩溃'},
+ {label:'求助：导师/朋友',desc:'+社交 +利他',effects:{社交:3,利他:2,自主:1,mood:2,lin_like:2},note:'你发现你不是一个人'}]},
+{id:'final_reflect',sem:[11,12],type:'hidden',title:'毕业前的长谈',desc:'林学姐约你吃了顿饭。她说：四年下来，告诉我你发现了什么。',cost:{energy:-2,mood:2},choices:[
+ {label:'我发现我擅长创造',effects:{创意:2,创造:3,自主:2,mood:3,lin_like:2},note:'林学姐："那就别停下来"'},
+ {label:'我发现我喜欢和人在一起',effects:{社交:3,影响:2,利他:2,mood:3,lin_like:2},note:'林学姐："你天生是个连接者"'},
+ {label:'我发现我需要稳定',effects:{学术:2,自我管理:2,稳定:3,mood:2,lin_like:1},note:'林学姐："稳定不是保守，是清楚自己想守护什么"'},
+ {label:'我还没想清楚',effects:{自主:3,mood:1,lin_like:1},note:'林学姐："那就好——四年的意义不是给答案"'}]},
+{id:'dorm_first',sem:[1],type:'daily',title:'凌晨两点的外放',desc:'对床室友戴着耳机以为没声音，机械键盘+外放游戏声穿透整间宿舍。你已经盯天花板两小时。',cost:{energy:-2,mood:-2},choices:[
+ {label:'起来直说，把规矩定下来',effects:{社交:1,影响:2,自主:2,mood:1,mate_like:-1},note:'气氛尴尬了一周，但夜里再也没声音了'},
+ {label:'群里委婉发个截图',effects:{社交:1,自我管理:1,稳定:1,mood:0,mate_like:1},note:'有用，但只管了三天'},
+ {label:'忍着，戴降噪',effects:{自我管理:1,稳定:2,自主:-1,mood:-2,money:-150},note:'你买了 Bose，钱包瘪了，问题没解'}]},
+{id:'lecture_spark',sem:[1,2,4],type:'daily',title:'一场撞见的讲座',desc:'路过教学楼公告栏，一个完全不熟的领域的讲座 15 分钟后开始，主题刚好戳到你。',cost:{energy:-1},choices:[
+ {label:'立刻进去听',effects:{学术:2,创意:2,创造:2,影响:1,mood:2},note:'你记了三页笔记，回来查了五本书'},
+ {label:'继续去自习',effects:{学术:1,自我管理:2,稳定:1,mood:0},note:'你按计划学完了今天的内容'},
+ {label:'拍下海报，等回放',effects:{自我管理:1,自主:1,mood:0},note:'回放你最终没看'}]},
+{id:'first_drunk',sem:[1,2],type:'daily',title:'第一次喝醉',desc:'生日饭桌上，几瓶啤酒下肚，你第一次知道自己酒量有多差。',cost:{energy:-3,money:-80},choices:[
+ {label:'拉着室友倒苦水',effects:{社交:2,影响:1,mood:2,mate_like:3},note:'第二天醒来你想钻地缝，但你们关系拉近了一大截'},
+ {label:'安静喝完先走',effects:{自我管理:1,自主:2,稳定:1,mood:-1},note:'你回宿舍睡了 14 小时'},
+ {label:'给远闺蜜打电话',effects:{社交:1,利他:2,mood:3,remote_like:3},note:'她说"原来你也会喝多啊"'}]},
+{id:'midterm_red',sem:[2,4,5],type:'limited',title:'核心课亮红灯',desc:'期中成绩出来，一门专业核心课你 58 分。重修风险摆在眼前。',cost:{energy:-3,mood:-3},choices:[
+ {label:'死磕到底，找助教刷题',effects:{学术:3,自我管理:3,稳定:2,mood:-2,energy:-3},note:'期末你考了 82，险胜'},
+ {label:'放弃保命，主攻其他课',effects:{自主:2,自我管理:1,稳定:-1,mood:0},note:'这门课 61 分擦边过，你保住了 GPA'},
+ {label:'找林学姐：是不是不适合？',effects:{社交:1,自主:2,mood:2,lin_like:2},note:'林学姐："分数说明不了天赋，只说明这周你没睡好"'}]},
+{id:'scholarship',sem:[2,5,8],type:'hidden',title:'奖学金评选',desc:'辅导员让你交申请表。你算了算 GPA，挤进前 15% 有点悬。',cost:{energy:-2},choices:[
+ {label:'认真准备，刷综测分',effects:{学术:2,自我管理:2,稳定:2,影响:1,mood:1,money:1000},note:'你拿了三等，¥1000 到账'},
+ {label:'佛系交一份',effects:{自主:1,稳定:0,mood:0},note:'没评上，也没难过'},
+ {label:'不交，让给更需要的同学',effects:{利他:3,自主:2,mood:2,mate_like:1},note:'室友评上了，请你吃了一顿火锅'}]},
+{id:'side_creative',sem:[2,3,5,8],type:'daily',title:'在小红书发了第一条',desc:'你把最近的笔记+照片排成一篇，犹豫了半小时点了发布。',cost:{energy:-2},choices:[
+ {label:'认真做账号',effects:{创意:3,创造:3,影响:2,自主:1,mood:2},note:'一个月后你有了 800 粉，开始有人私信问推荐'},
+ {label:'发完就删',effects:{自我管理:1,自主:1,mood:-1},note:'后台数据其实不差，可惜你没看见'},
+ {label:'转给闺蜜偷偷看',effects:{社交:1,创造:1,mood:1,remote_like:2},note:'她截图收藏了'}]},
+{id:'club_lead',sem:[2,4,5],type:'hidden',title:'社团让你当负责人',desc:'换届会，几个学长把目光投向你。"明年这摊就交给你了？"',cost:{energy:-2},choices:[
+ {label:'接！把它做出点不一样',effects:{社交:2,实践:2,影响:3,创造:2,自主:2,mood:2,energy:-2},note:'一年后这社团多了 60 人，你也多了 40 件破事'},
+ {label:'婉拒，专心自己的事',effects:{自我管理:2,自主:3,稳定:1,mood:1},note:'你保住了时间，少了一段履历'},
+ {label:'当副手，跟着学',effects:{社交:1,实践:1,稳定:2,mood:1},note:'你看清了"做组织"是什么样子'}]},
+{id:'mental_help',sem:[4,5,7,8],type:'hidden',title:'要不要去心理中心',desc:'你已经一周睡不好了。校园心理中心免费预约，但你犹豫——"我是不是没资格去"。',cost:{energy:-1,mood:-2},choices:[
+ {label:'预约一次试试',effects:{自我管理:2,自主:2,利他:1,mood:3,lin_like:2},note:'咨询师："你不需要严重才能来"'},
+ {label:'先跟林学姐聊',effects:{社交:1,自主:1,mood:2,lin_like:3},note:'她陪你走到了心理中心门口'},
+ {label:'再扛扛',effects:{自我管理:1,稳定:1,mood:-2,energy:-2},note:'你扛过去了，但你记住了那种感觉'}]},
+{id:'roommate_cry',sem:[5,7],type:'daily',title:'室友失恋',desc:'凌晨一点，室友在床上抽泣。你听了 20 分钟，没忍住坐过去。',cost:{energy:-2,mood:-1},choices:[
+ {label:'陪聊到天亮',effects:{社交:2,利他:3,影响:1,mood:1,mate_like:4,energy:-3},note:'第二天第一节课你俩并肩睡过去了'},
+ {label:'递纸巾+静静听',effects:{利他:2,自我管理:2,mood:1,mate_like:3},note:'有时候不说话就是最大的支持'},
+ {label:'装睡，明天再说',effects:{自我管理:1,自主:1,稳定:1,mood:-2,mate_like:-2},note:'她第二天没提，你们之间多了点距离'}]},
+{id:'side_money',sem:[5,6,7],type:'daily',title:'有人找你接私活',desc:'学姐转介绍，一个外快机会：做三周，¥1500。但同期你有一个比赛和两门课要复习。',cost:{energy:-2},choices:[
+ {label:'接！钱+经验',effects:{实践:3,创造:2,自我管理:1,mood:1,money:1500,energy:-3},note:'你按时交付了，学姐又给了你下一单'},
+ {label:'拒，专心比赛',effects:{学术:1,自主:2,稳定:2,mood:0},note:'比赛拿了二等奖'},
+ {label:'接但降价/缩范围',effects:{社交:1,影响:2,自主:2,创造:1,mood:1,money:800},note:'你学会了说"这部分我不做"'}]},
+{id:'chance_high',sem:[3,6,9],type:'daily',title:'路上撞见高中同学',desc:'地铁站，一个三年没见的高中同学正在玩手机。她现在在另一个城市的另一所大学。',cost:{energy:-1},choices:[
+ {label:'拉去吃饭，聊到打烊',effects:{社交:3,利他:2,mood:3,money:-80},note:'你发现"原来不是只有我在迷茫"'},
+ {label:'加个微信就走',effects:{社交:1,自我管理:1,mood:0},note:'微信加了，再也没说过话'},
+ {label:'假装没看见',effects:{自主:1,稳定:1,mood:-1},note:'下了地铁你才后悔'}]},
+{id:'lab_intern',sem:[6,7],type:'limited',title:'实验室抛来的橄榄枝',desc:'一个老师邮件邀请你进实验室。你之前选过他的课，他说看好你的某个作业。',cost:{energy:-2},choices:[
+ {label:'去！科研轨道',effects:{学术:4,实践:2,稳定:2,影响:1,mood:2,energy:-3},note:'你在一年内署名了一篇论文'},
+ {label:'去看看，先试两个月',effects:{学术:2,实践:1,自主:2,mood:1},note:'你判断："不适合"，全身而退'},
+ {label:'拒了，路线不一样',effects:{自主:3,创造:1,mood:0},note:'老师回复："理解，路开着"'}]},
+{id:'paper_reject',sem:[7,8,9],type:'hidden',title:'第一封拒信',desc:'你的论文/作品/比赛投稿，收到一封很客气的"不接收"。',cost:{energy:-2,mood:-3},choices:[
+ {label:'认真读 review，改一稿',effects:{学术:3,自我管理:3,稳定:2,mood:1,energy:-2},note:'修改稿被另一个地方接收了'},
+ {label:'喝一杯，第二天继续',effects:{自我管理:2,自主:2,mood:1,money:-30},note:'你学会了"被拒不是被否定"'},
+ {label:'扔抽屉，转方向',effects:{自主:3,创造:1,稳定:-1,mood:-1},note:'两年后你翻出来，仍然觉得当时的判断没错'}]},
+{id:'class_news',sem:[7,8,10],type:'daily',title:'班群里的一条爆炸新闻',desc:'有人退学创业 / 有人出国 / 有人 gap 去环球——班群炸了，你的胃也跟着翻。',cost:{mood:-2},choices:[
+ {label:'冷静吃瓜，回自己的进度',effects:{自我管理:2,自主:3,稳定:2,mood:1},note:'你发现别人的剧本演不了你的角色'},
+ {label:'冲过去问"怎么决定的"',effects:{社交:2,影响:1,自主:1,mood:2},note:'你听完反而更确定自己不一样'},
+ {label:'整晚 emo',effects:{自我管理:-1,稳定:-1,mood:-3,energy:-2},note:'第二天你打开自己的简历，看了一眼，关掉了'}]},
+{id:'autumn_recruit',sem:[10],type:'limited',title:'秋招大潮',desc:'9 月，大厂宣讲会一场接一场。投了 30 份，HR 已读不回 25 份。',cost:{energy:-4,mood:-3},choices:[
+ {label:'海投+猛改简历',effects:{实践:3,自我管理:3,影响:1,稳定:1,mood:-2,energy:-3,money:500},note:'第 47 份简历，你拿到了一个面试'},
+ {label:'聚焦 5 家深做',effects:{实践:2,自主:3,创造:1,mood:1,money:800},note:'5 家进了 3 家终面，你有了选择权'},
+ {label:'找学长内推 + 模拟面试',effects:{社交:3,实践:2,影响:2,mood:2,money:1000,lin_like:1},note:'有人给你做了三轮 mock，你过了'}]},
+{id:'postgrad_winter',sem:[10],type:'limited',title:'考研冲刺',desc:'12 月那场，倒计时 60 天。你住进了自习室。',cost:{energy:-5,mood:-3},choices:[
+ {label:'闭关式冲刺',effects:{学术:5,自我管理:4,稳定:3,mood:-3,energy:-5},note:'你瘦了 8 斤，初试出分那天哭了'},
+ {label:'稳节奏 + 留 1 天放风',effects:{学术:3,自我管理:3,自主:2,mood:0,energy:-3},note:'你考完没崩，状态比预期好'},
+ {label:'报学习小组，互相打卡',effects:{学术:3,社交:2,影响:1,自我管理:2,mood:2,energy:-3},note:'三个研友，两个上岸'}]},
+{id:'parents_visit',sem:[11,12],type:'daily',title:'爸妈来学校',desc:'他们订了高铁来看你。妈妈要看你住的地方，爸爸要看你食堂。',cost:{energy:-2,money:-200},choices:[
+ {label:'带他们逛遍校园',effects:{社交:1,利他:3,影响:1,mood:3,mom_like:3},note:'你第一次发现你妈对图书馆比你还兴奋'},
+ {label:'吃顿好的，聊聊未来',effects:{社交:2,利他:2,自主:1,mood:2,mom_like:2},note:'你爸第一次说"你自己决定"'},
+ {label:'匆匆吃饭，回去赶 ddl',effects:{自我管理:2,稳定:1,mood:-2,mom_like:-1},note:'他们走后你后悔了一周'}]},
+{id:'thesis_panic',sem:[11],type:'limited',title:'毕设答辩前夜',desc:'PPT 还差三页，导师邮件还没回，明早 9 点上场。',cost:{energy:-4,mood:-3},choices:[
+ {label:'通宵到位',effects:{学术:3,实践:3,自我管理:3,稳定:2,mood:-3,energy:-5},note:'答辩 87 分，你下台就睡着了'},
+ {label:'凌晨 2 点收笔，睡 4 小时',effects:{自我管理:3,自主:2,mood:0,energy:-2},note:'答辩 82 分，你头脑清醒'},
+ {label:'去求室友帮做最后两页',effects:{社交:3,利他:1,影响:1,mood:2,mate_like:3,energy:-2},note:'你们俩在咖啡馆把它干完了'}]},
+{id:'grad_trip',sem:[12],type:'daily',title:'毕业旅行',desc:'宿舍四人最后一次集体出门。预算紧，路线还没定。',cost:{energy:-2,money:-600,mood:3},choices:[
+ {label:'川西 7 日，山里走一趟',effects:{社交:2,实践:2,创意:2,自主:2,mood:4,mate_like:3,money:-800},note:'你在折多山口拍下四个人的合照'},
+ {label:'城市跳岛，小预算',effects:{社交:2,创意:1,自主:2,mood:3,mate_like:2,money:-400},note:'你们在三个城市撸了五家串店'},
+ {label:'不去，留下交接工作',effects:{自我管理:2,稳定:2,自主:1,mood:-2,mate_like:-2},note:'后来看朋友圈你后悔了，但那年你少花一笔钱'}]},
+{id:'last_night',sem:[12],type:'hidden',title:'宿舍最后一晚',desc:'墙皮掉了一块，海报印还在。明天物业来收钥匙。',cost:{mood:-1},choices:[
+ {label:'四个人坐到天亮聊大学',effects:{社交:3,利他:2,影响:2,mood:4,mate_like:5,energy:-3},note:'你们约好十年后回这间宿舍门口拍一张照'},
+ {label:'安静收东西，写一封信',effects:{创意:3,创造:2,自主:3,mood:3},note:'你把信折起来塞进了床板缝里'},
+ {label:'早睡，明天还要赶火车',effects:{自我管理:2,稳定:2,mood:1,energy:2},note:'你睡了四年来最沉的一觉'}]},
+{id:'junior_ask',sem:[11,12],type:'daily',title:'学弟学妹问你大学应该做什么',desc:'迎新群里有个大一新生 @ 你。你看了看自己四年走过的路。',cost:{energy:-1},choices:[
+ {label:'认真写一千字',effects:{社交:2,影响:3,利他:3,创造:2,mood:3},note:'后来你发现这条被收藏了 200 次'},
+ {label:'给他/她推三本书',effects:{影响:2,创造:1,利他:1,mood:2},note:'三个月后他/她来道谢'},
+ {label:'回一句"做你自己想做的"',effects:{自主:2,影响:1,mood:1},note:'其实你也是这么过来的'}]}
+];
+const initState=()=>({name:'',semIdx:0,energy:10,money:200,mood:7,abilities:{学术:1,社交:1,实践:1,创意:1,自我管理:1},values:{稳定:1,创造:1,影响:1,自主:1,利他:1},npc_likes:{lin:1,remote:2,mate:0,mom:3},diary:[],history:[],tab:'main',done:false});
+let S=JSON.parse(localStorage.getItem('明日航线')||'null')||initState();
+function save(){localStorage.setItem('明日航线',JSON.stringify(S));}
+function reset(){if(confirm('确定重新开始？当前进度会消失')){S=initState();save();render();}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function moodEmoji(m){if(m>=8)return'✨';if(m>=6)return'🙂';if(m>=4)return'😐';if(m>=2)return'😶‍🌫️';return'🥲';}
+function applyEffects(eff){if(!eff)return[];const c=[];Object.entries(eff).forEach(([k,v])=>{if(k==='mood'){S.mood=clamp(S.mood+v,0,10);c.push({k:'心情',v});}else if(k==='energy'){S.energy=clamp(S.energy+v,0,10);c.push({k:'精力',v});}else if(k==='money'){S.money=Math.max(0,S.money+v);c.push({k:'生活费',v});}else if(k.endsWith('_like')){const id=k.replace('_like','');S.npc_likes[id]=clamp((S.npc_likes[id]||0)+v,0,10);c.push({k:NPCS[id].name+'好感',v});}else if(S.abilities[k]!==undefined){S.abilities[k]=clamp(S.abilities[k]+v,0,10);c.push({k,v});}else if(S.values[k]!==undefined){S.values[k]=clamp(S.values[k]+v,0,10);c.push({k,v});}});return c;}
+function semEvents(){const sem=SEMESTERS[S.semIdx].id;return EVENTS.filter(e=>e.sem.includes(sem));}
+function drawRadar(canvas,data,color,labels){const ctx=canvas.getContext('2d');const W=canvas.width,H=canvas.height;const cx=W/2,cy=H/2,R=Math.min(W,H)/2-30;ctx.clearRect(0,0,W,H);const n=labels.length;for(let r=1;r<=5;r++){ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const x=cx+Math.cos(a)*R*r/5,y=cy+Math.sin(a)*R*r/5;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle='#e3d8c5';ctx.lineWidth=.8;ctx.stroke();}for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.strokeStyle='#efe5d4';ctx.lineWidth=.8;ctx.stroke();}ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const v=clamp(data[i],0,10)/10;const x=cx+Math.cos(a)*R*v,y=cy+Math.sin(a)*R*v;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.fillStyle=color+'44';ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.fill();ctx.stroke();ctx.font='11px PingFang SC,sans-serif';ctx.fillStyle='#7a7268';ctx.textAlign='center';ctx.textBaseline='middle';for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const x=cx+Math.cos(a)*(R+16),y=cy+Math.sin(a)*(R+16);ctx.fillText(labels[i],x,y);}}
+const app=document.getElementById('app');
+function el(h){const d=document.createElement('div');d.innerHTML=h;return d.firstElementChild;}
+function renderIntro(){app.innerHTML='';const hasProgress=S.semIdx>0||S.history.length>0||S.done;const intro=el(`<div class="intro fade"><h1>明日航线</h1><div class="en">TOMORROW'S ROUTE</div><div class="quote">让我看到未来仍有希望，看清自己真正在意的价值排序，<br>不被「正确标准」牵着走，<br>选错也能重来。</div><div class="feature-row"><div class="feature"><div class="ic">🧭</div><div class="lb">可试错</div><div class="ds">无 Game Over</div></div><div class="feature"><div class="ic">🌱</div><div class="lb">可体验</div><div class="ds">4 年 16 学期</div></div><div class="feature"><div class="ic">💫</div><div class="lb">可看见</div><div class="ds">价值观可视化</div></div><div class="feature"><div class="ic">🤝</div><div class="lb">被陪伴</div><div class="ds">NPC 情感支持</div></div></div><input class="input-name" id="nameInput" placeholder="给自己起个名字" maxlength="10" /><button class="btn" id="startBtn">入学 · 进入大一</button><div style="height:8px"></div>${hasProgress?`<button class="btn ghost" id="loadBtn">继续上次（${S.done?'已毕业':SEMESTERS[S.semIdx]?.label||''}）</button>`:''}</div><div class="credit">基于《明日航线》结课策划方案 v3 · 6 位大学生访谈驱动</div>`);app.appendChild(intro);document.getElementById('startBtn').onclick=()=>{const v=document.getElementById('nameInput').value.trim()||'我';S=initState();S.name=v;S.diary.push({sem:0,date:'入学第一天',mood:7,tag:'入学',text:`今天是开学第一天，${v} 拎着两个箱子站在宿舍楼下。`});save();render();};if(hasProgress)document.getElementById('loadBtn').onclick=()=>render();}
+function render(){if(S.done){renderFuture();return;}if(!S.name){renderIntro();return;}if(S.semIdx>=SEMESTERS.length){S.done=true;save();renderFuture();return;}app.innerHTML='';app.appendChild(renderTopbar());if(S.tab==='diary')app.appendChild(renderDiaryTab());else if(S.tab==='relation')app.appendChild(renderRelationTab());else if(S.tab==='future')app.appendChild(renderFuturePreview());else renderMainTab();app.appendChild(renderTabs());}
+function renderTopbar(){const sem=SEMESTERS[S.semIdx];return el(`<div class="topbar fade"><div class="row" style="grid-column:1/-1"><div><span class="label">学期</span> <span class="val">${sem.label}</span></div><div style="font-size:11px;color:var(--sub)">${sem.tagline}</div></div><div><div class="row"><span class="label">精力</span><span class="val">${S.energy}/10</span></div><div class="bar-wrap"><div class="bar-fill mint" style="width:${S.energy*10}%"></div></div></div><div><div class="row"><span class="label">心情</span><span class="val">${moodEmoji(S.mood)} ${S.mood}/10</span></div><div class="bar-wrap"><div class="bar-fill laven" style="width:${S.mood*10}%"></div></div></div><div class="row" style="grid-column:1/-1"><div><span class="label">生活费</span> <span class="val">¥${S.money}</span></div><div><span class="label">玩家</span> <span class="val">${S.name}</span></div></div></div>`);}
+function renderMainTab(){const radarCard=el(`<div class="card fade"><h3>🧭 你的现在</h3><div class="hint">能力 = 你会什么 · 价值观 = 你在乎什么</div><div class="stats-row"><div class="stats-block"><div class="title">能力树</div><canvas id="abilityRadar" width="200" height="180"></canvas></div><div class="stats-block"><div class="title">价值观罗盘</div><canvas id="valueRadar" width="200" height="180"></canvas></div></div></div>`);app.appendChild(radarCard);const evCard=el(`<div class="card fade"><h3>📌 本学期的选择</h3><div class="hint">精力允许范围内自由选 · 选完按底部按钮进入下一学期</div><div id="eventList"></div><button class="btn mint small" id="nextSem" style="margin-top:12px">▶ 进入下一学期</button></div>`);app.appendChild(evCard);const evList=document.getElementById('eventList');semEvents().forEach(e=>{const used=S.history.find(h=>h.eventId===e.id&&h.sem===S.semIdx);const card=el(`<div class="event" style="${used?'opacity:.5;':''}"><div><span class="tag ${e.type}">${e.type==='daily'?'日常':e.type==='limited'?'限时':'隐藏'}</span>${used?'<span class="tag">已选</span>':''}</div><div class="event-title">${e.title}</div><div class="event-desc">${e.desc}</div><div class="event-cost">需 精力 ${e.cost?.energy||0}${e.cost?.money?(' · 钱 '+e.cost.money):''}</div><div class="choices"></div></div>`);evList.appendChild(card);const choices=card.querySelector('.choices');e.choices.forEach((c,idx)=>{const can=!used&&S.energy+(e.cost?.energy||0)>=0&&S.money+(e.cost?.money||0)>=0;const btn=el(`<button class="choice" ${can?'':'disabled style="opacity:.4;cursor:not-allowed"'}><div class="label">${c.label}</div><div class="hint">${c.desc||''}</div></button>`);btn.onclick=()=>{if(can)pickEvent(e,idx);};choices.appendChild(btn);});});document.getElementById('nextSem').onclick=nextSemester;setTimeout(()=>{const ab=ABILITIES.map(a=>S.abilities[a.n]);const vl=VALUES.map(v=>S.values[v.n]);drawRadar(document.getElementById('abilityRadar'),ab,'#e76b5e',ABILITIES.map(a=>a.n));drawRadar(document.getElementById('valueRadar'),vl,'#9d8bc4',VALUES.map(v=>v.n));},0);}
+function pickEvent(ev,idx){const cost=ev.cost||{};if(cost.energy)S.energy=clamp(S.energy+cost.energy,0,10);if(cost.money)S.money=Math.max(0,S.money+cost.money);if(cost.mood)S.mood=clamp(S.mood+cost.mood,0,10);const c=ev.choices[idx];const changes=applyEffects(c.effects||{});S.history.push({sem:S.semIdx,eventId:ev.id,choice:idx,label:c.label});if(c.note){S.diary.push({sem:S.semIdx,date:`${SEMESTERS[S.semIdx].label} · ${ev.title}`,mood:S.mood,tag:c.label.slice(0,6),text:c.note});}save();app.innerHTML='';app.appendChild(renderTopbar());const fb=el(`<div class="card fade" style="border:2px solid var(--coral)"><h3>📖 反馈</h3><div style="font-size:14px;line-height:1.7;margin-bottom:10px">${c.note||'选择已记录'}</div><div class="feedback"><div style="font-weight:600;font-size:12px;margin-bottom:4px">这一步改变了什么</div><div class="changes">${changes.map(ch=>`<span class="chg ${ch.v>0?'up':'down'}">${ch.k} ${ch.v>0?'+':''}${ch.v}</span>`).join('')||'<span class="chg">无明显变化</span>'}</div></div><button class="btn" id="contBtn">继续</button></div>`);app.appendChild(fb);app.appendChild(renderTabs());document.getElementById('contBtn').onclick=render;}
+function nextSemester(){const isYearEnd=(S.semIdx+1)%4===0||S.semIdx===SEMESTERS.length-1;if(isYearEnd){renderReflect();return;}doAdvance();}
+function doAdvance(){S.energy=clamp(S.energy+5,0,10);S.money=Math.min(2000,S.money+300);S.mood=clamp(S.mood+1,0,10);S.semIdx+=1;save();if(S.semIdx>=SEMESTERS.length){S.done=true;save();renderFuture();return;}render();}
+function renderReflect(){const sem=SEMESTERS[S.semIdx];const top=topAbility();const topV=topValue();app.innerHTML='';app.appendChild(renderTopbar());const r=el(`<div class="card fade"><h3>📔 学年回顾 · ${sem.label}</h3><div class="dialog"><div class="npc"><div class="npc-avatar" style="background:linear-gradient(135deg,#a8d8c8,#6fbfa8)">🌿</div><div><div class="npc-name">林学姐</div><div class="npc-role">导师</div></div></div><div class="dialog-text">这一学年走完了。我看到你 ${top.name}涨得最快（${top.val}/10），${topV.name}也开始变得清晰。重要的不是你做对了什么——重要的是你发现了什么关于自己的新事实。</div></div><div style="margin:12px 0 6px;font-size:13px;color:var(--sub)">如果你想，写一句给自己看的话：</div><textarea class="reflect" id="refTxt" rows="3" placeholder="（可以留空，按继续跳过）"></textarea><div style="height:10px"></div><button class="btn" id="refBtn">写完，继续往前走 →</button></div>`);app.appendChild(r);app.appendChild(renderTabs());document.getElementById('refBtn').onclick=()=>{const t=document.getElementById('refTxt').value.trim();if(t){S.diary.push({sem:S.semIdx,date:sem.label+' · 学年总结',mood:S.mood,tag:'反思',text:t});save();}doAdvance();};}
+function renderDiaryTab(){const w=el(`<div class="card fade"><h3>📖 我的日记</h3><div class="hint">关键节点 + 心情标签 · 共 ${S.diary.length} 条</div><div id="diaryList"></div></div>`);const list=w.querySelector('#diaryList');if(S.diary.length===0){list.innerHTML='<div class="hint" style="padding:20px;text-align:center">还没有记录。先去做点选择吧。</div>';}else{[...S.diary].reverse().forEach(d=>{list.appendChild(el(`<div class="diary-entry"><div class="meta">${d.date}</div><div class="text">${d.text}</div><div class="mood">${moodEmoji(d.mood)} ${d.tag}</div></div>`));});}return w;}
+function renderRelationTab(){const w=el(`<div class="card fade"><h3>💞 我的关系</h3><div class="hint">NPC 好感度（满 10）</div><div id="rList"></div></div>`);const list=w.querySelector('#rList');Object.entries(NPCS).forEach(([id,n])=>{const v=S.npc_likes[id]||0;list.appendChild(el(`<div class="npc-card"><div class="npc-avatar" style="background:linear-gradient(135deg,${n.color},#fff)">${n.emoji}</div><div class="info"><div class="name">${n.name}</div><div class="desc">${n.role}</div><div class="heart-bar"><div class="heart-fill" style="width:${v*10}%"></div></div></div><div style="font-weight:600;font-size:13px;color:var(--coral-d)">${v}/10</div></div>`));});return w;}
+function renderFuturePreview(){const paths=predictPaths();const w=el(`<div class="card fade"><h3>🔮 未来预览</h3><div class="hint">根据你目前的能力 + 价值观，三条「如果继续这样」的路径推演</div><div id="pList"></div><div class="hint" style="margin-top:10px;font-size:11px">⚠ 不是预测，是镜子。你随时可以改变方向。</div></div>`);const list=w.querySelector('#pList');paths.forEach(p=>list.appendChild(el(`<div class="path-card"><div class="name">${p.icon} ${p.name}</div><div class="desc">${p.desc}</div></div>`)));return w;}
+function renderTabs(){const tabs=[{id:'main',ic:'🗺️',name:'地图'},{id:'diary',ic:'📖',name:'日记'},{id:'relation',ic:'💞',name:'关系'},{id:'future',ic:'🔮',name:'未来'}];const bar=el(`<div class="tabs"></div>`);tabs.forEach(t=>{const i=el(`<div class="tab ${S.tab===t.id?'active':''}"><span class="tab-icon">${t.ic}</span>${t.name}</div>`);i.onclick=()=>{S.tab=t.id;save();render();};bar.appendChild(i);});return bar;}
+function topAbility(){let m={name:'',val:0};ABILITIES.forEach(a=>{if(S.abilities[a.n]>m.val)m={name:a.n,val:S.abilities[a.n]};});return m;}
+function topValue(){let m={name:'',val:0};VALUES.forEach(v=>{if(S.values[v.n]>m.val)m={name:v.n,val:S.values[v.n]};});return m;}
+function predictPaths(){const top=topAbility().name;const map1={'学术':{icon:'📚',name:'研究 / 深造路径',desc:'你身上有可以沉下去的耐心。继续往学术里走，三到五年后你可能在某个细分领域里成为可以被引用的人。'},'社交':{icon:'🤝',name:'人际连接者路径',desc:'你能让人愿意打开自己。HR、产品经理、咨询、教育、社区运营都是天然舞台——你解决的是"人和人之间"的问题。'},'实践':{icon:'🛠️',name:'落地执行者路径',desc:'你信任"做出来"胜过"想清楚"。产品、运营、工程、创业团队的早期成员都需要你这种能把事跑通的能力。'},'创意':{icon:'🎨',name:'创作者路径',desc:'你看世界的方式和大多数人不太一样。设计、写作、影视、独立游戏、艺术——你的产出本身就是答案。'},'自我管理':{icon:'🧘',name:'长期主义者路径',desc:'你最大的优势是稳定地完成困难的事。任何需要"持续 5 年以上"的事——博士、独立开发者、作家、长期投资——你都能做。'}};const topv=topValue().name;const map2={'稳定':{icon:'🏠',name:'根扎深的人生',desc:'你在意"可以依靠的东西"。体制内、大公司核心岗、教师、医生这些路径会让你更踏实——稳定不是保守，是清楚自己想守护什么。'},'创造':{icon:'✨',name:'造物者人生',desc:'你想留下你做出来的东西。独立产品、原创作品、新公司、新方法论——选择能让你"出手就是你"的环境。'},'影响':{icon:'📣',name:'影响他人的人生',desc:'你在意"被看见"和"改变别人"。媒体、教育、政策、社群、KOL 都是你的母题——你的价值在传播半径里。'},'自主':{icon:'🌿',name:'自洽自由的人生',desc:'你不愿意被定义。自由职业、远程工作、跨界混搭、不打卡的生活——为这种自由付出的代价是你愿意付的。'},'利他':{icon:'🌻',name:'服务他人的人生',desc:'你在意"我帮过谁"。NGO、医疗、教育、心理支持、社会企业——你做事的意义来自于另一端的人。'}};const sortedA=[...ABILITIES].map(a=>({k:a.n,v:S.abilities[a.n]})).sort((a,b)=>b.v-a.v);const second=sortedA[1]?.k||'社交';return[map1[top]||{icon:'🌱',name:'通才路径',desc:'你的能力还在均衡发育。'},map2[topv]||{icon:'🧭',name:'寻找意义的人生',desc:'你的价值观还在形成中。'},{icon:'🔀',name:`跨界组合：${top} × ${second}`,desc:`你不一定要选单一方向。最有意思的可能性常常在两个能力的交叉点上——${top}+${second}的组合可以让你做${top}的人做不了的事，也做${second}的人做不到的深度。`}];}
+function renderFuture(){app.innerHTML='';const paths=predictPaths();const top=topAbility(),topv=topValue();const turning=S.history.filter(h=>['transfer_decide','first_intern','big_choice','final_reflect'].includes(h.eventId));app.appendChild(el(`<div class="map-section fade"><div class="map-title">📜 ${S.name} 的未来地图</div><div style="text-align:center;color:var(--sub);font-size:12px">四年走完了。这不是终点，是地图。</div></div>`));const radar=el(`<div class="card fade"><h3>🧭 你的画像</h3><div class="stats-row"><div class="stats-block"><div class="title">能力雷达（最终形态）</div><canvas id="finalA" width="210" height="190"></canvas></div><div class="stats-block"><div class="title">价值观罗盘（最终形态）</div><canvas id="finalV" width="210" height="190"></canvas></div></div><div class="feedback"><div style="font-weight:600;margin-bottom:6px">📌 关键发现</div><div style="font-size:13px;line-height:1.7">· 最突出的能力是 <b style="color:var(--coral-d)">${top.name}</b>（${top.val}/10）<br>· 最在意的是 <b style="color:var(--laven-d)">${topv.name}</b>（${topv.val}/10）<br>· 心情终值 ${moodEmoji(S.mood)} ${S.mood}/10 · 共记录 ${S.diary.length} 条日记 · 经历 ${S.history.length} 次选择</div></div></div>`);app.appendChild(radar);if(turning.length){const t=el(`<div class="card fade"><h3>🔖 关键转折</h3><div class="hint">这几个选择最大地塑造了你</div><div id="turnList"></div></div>`);const tl=t.querySelector('#turnList');turning.forEach(it=>{const ev=EVENTS.find(e=>e.id===it.eventId);tl.appendChild(el(`<div class="diary-entry"><div class="meta">${SEMESTERS[it.sem].label}</div><div class="text"><b>${ev.title}</b> → ${it.label}</div></div>`));});app.appendChild(t);}const pc=el(`<div class="card fade"><h3>🌅 「如果继续这样」三条路径</h3><div class="hint">不是预测，是镜子。你随时可以改变方向。</div><div id="pathFinal"></div></div>`);const pf=pc.querySelector('#pathFinal');paths.forEach(p=>pf.appendChild(el(`<div class="path-card"><div class="name">${p.icon} ${p.name}</div><div class="desc">${p.desc}</div></div>`)));app.appendChild(pc);const ending=el(`<div class="card fade" style="text-align:center;background:linear-gradient(135deg,#fffaf3,#f9f3ff)"><h3 style="justify-content:center">💌</h3><div style="font-size:14px;line-height:1.8">${S.name}，<br>告诉你的不是该做什么工作，<br>而是：你关心什么、擅长什么、愿意为什么付出。<br><br><i style="color:var(--sub);font-size:12px">— 林学姐</i></div><div style="height:14px"></div><div class="btn-row"><button class="btn mint small" id="exportBtn">📥 导出地图 (PNG)</button><button class="btn laven small" id="restartBtn">🔄 重玩一次</button></div></div><div class="credit">《明日航线》Tomorrow's Route · 基于结课策划方案 v3</div>`);app.appendChild(ending);setTimeout(()=>{const ab=ABILITIES.map(a=>S.abilities[a.n]);const vl=VALUES.map(v=>S.values[v.n]);drawRadar(document.getElementById('finalA'),ab,'#e76b5e',ABILITIES.map(a=>a.n));drawRadar(document.getElementById('finalV'),vl,'#9d8bc4',VALUES.map(v=>v.n));},0);document.getElementById('restartBtn').onclick=reset;document.getElementById('exportBtn').onclick=exportMap;}
+function wrapText(t,p){const out=[];let cur='';for(const ch of t){cur+=ch;if(cur.length>=p){out.push(cur);cur='';}}if(cur)out.push(cur);return out;}
+function exportMap(){const W=800,H=1180;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#fffaf3');g.addColorStop(.5,'#fff');g.addColorStop(1,'#f9f3ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#e76b5e';ctx.font='bold 36px PingFang SC,sans-serif';ctx.textAlign='center';ctx.fillText(`${S.name} 的未来地图`,W/2,70);ctx.fillStyle='#7a7268';ctx.font='14px PingFang SC,sans-serif';ctx.fillText('《明日航线》Tomorrow\'s Route · 四年回顾',W/2,100);const dsr=(ox,oy,R,data,color,labels,title)=>{ctx.fillStyle='#3a3a3a';ctx.font='bold 16px PingFang SC,sans-serif';ctx.textAlign='center';ctx.fillText(title,ox,oy-R-20);const n=labels.length;for(let r=1;r<=5;r++){ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const x=ox+Math.cos(a)*R*r/5,y=oy+Math.sin(a)*R*r/5;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle='#e3d8c5';ctx.lineWidth=1;ctx.stroke();}ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const v=clamp(data[i],0,10)/10;const x=ox+Math.cos(a)*R*v,y=oy+Math.sin(a)*R*v;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.fillStyle=color+'55';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='#7a7268';ctx.font='13px PingFang SC,sans-serif';for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n;const x=ox+Math.cos(a)*(R+20),y=oy+Math.sin(a)*(R+20);ctx.fillText(labels[i],x,y);}};dsr(200,280,120,ABILITIES.map(a=>S.abilities[a.n]),'#e76b5e',ABILITIES.map(a=>a.n),'能力树');dsr(600,280,120,VALUES.map(v=>S.values[v.n]),'#9d8bc4',VALUES.map(v=>v.n),'价值观罗盘');const top=topAbility(),topv=topValue();ctx.fillStyle='#3a3a3a';ctx.font='bold 18px PingFang SC,sans-serif';ctx.textAlign='left';ctx.fillText('📌 关键发现',60,490);ctx.font='15px PingFang SC,sans-serif';ctx.fillText(`· 最突出能力：${top.name}（${top.val}/10）`,80,520);ctx.fillText(`· 最在意的：${topv.name}（${topv.val}/10）`,80,545);ctx.fillText(`· 共 ${S.diary.length} 条日记 · 经历 ${S.history.length} 次选择`,80,570);const paths=predictPaths();ctx.font='bold 18px PingFang SC,sans-serif';ctx.fillText('🌅 三条「如果继续」路径',60,625);let py=665;paths.forEach(p=>{ctx.fillStyle='#e76b5e';ctx.font='bold 16px PingFang SC,sans-serif';ctx.fillText(p.icon+' '+p.name,80,py);py+=24;ctx.fillStyle='#7a7268';ctx.font='13px PingFang SC,sans-serif';wrapText(p.desc,52).forEach(l=>{ctx.fillText(l,80,py);py+=22;});py+=10;});ctx.fillStyle='#9d8bc4';ctx.font='italic 13px PingFang SC,sans-serif';ctx.textAlign='right';ctx.fillText(`告诉你的不是该做什么工作，而是：你关心什么、擅长什么、愿意为什么付出。— 林学姐`,W-40,H-50);ctx.fillStyle='#bbb';ctx.font='10px PingFang SC,sans-serif';ctx.fillText('《明日航线》Tomorrow\'s Route',W-40,H-30);const url=cv.toDataURL('image/png');const a=document.createElement('a');a.href=url;a.download=`${S.name}_明日航线_未来地图.png`;a.click();}
+if(S.name&&(S.semIdx>0||S.history.length>0||S.done))render();else renderIntro();
+</script>
 </body>
 </html>
